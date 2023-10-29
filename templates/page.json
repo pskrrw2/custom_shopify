@@ -1,11 +1,9 @@
 {
-  "name": "Page",
   "sections": {
     "main": {
-      "type": "page"
+      "type": "main-page",
+      "settings": { "padding_top": 28, "padding_bottom": 28 }
     }
   },
-  "order": [
-    "main"
-  ]
+  "order": ["main"]
 }

@@ -1,1 +1,117 @@
-if(!customElements.get("pickup-availability")){class e extends HTMLElement{constructor(){super(),this.hasAttribute("available")&&(this.errorHtml=this.querySelector("template").content.firstElementChild.cloneNode(!0),this.onClickRefreshList=this.onClickRefreshList.bind(this),this.fetchAvailability(this.dataset.variantId))}fetchAvailability(e){let t=this.dataset.baseUrl;t.endsWith("/")||(t+="/");fetch(`${t}variants/${e}/?section_id=pickup-availability`).then((e=>e.text())).then((e=>{const t=(new DOMParser).parseFromString(e,"text/html").querySelector(".shopify-section");this.renderPreview(t)})).catch((e=>{const t=this.querySelector("button");t&&t.removeEventListener("click",this.onClickRefreshList),this.renderError()}))}onClickRefreshList(e){this.fetchAvailability(this.dataset.variantId)}renderError(){this.innerHTML="",this.appendChild(this.errorHtml),this.querySelector("button").addEventListener("click",this.onClickRefreshList)}renderPreview(e){const t=document.querySelector("#Drawer-Pickup-Availability");if(t&&t.remove(),!e.querySelector("pickup-availability-preview"))return this.innerHTML="",void this.removeAttribute("available");this.innerHTML=e.querySelector("pickup-availability-preview").outerHTML,this.setAttribute("available",""),document.body.appendChild(e.querySelector("#Drawer-Pickup-Availability"));const r=this.querySelector("button");r&&r.addEventListener("click",(e=>{document.querySelector("#Drawer-Pickup-Availability").openDrawer()}))}}customElements.define("pickup-availability",e)}if(!customElements.get("pickup-availability-drawer")){class e extends HTMLElement{constructor(){super(),this.drawerWapper=this.querySelector(".m-drawer__wrapper"),this.drawerContent=this.querySelector(".m-drawer__content"),this.drawerClose=this.querySelector(".m-drawer__close"),this.drawerClose.addEventListener("click",(e=>{e.preventDefault(),this.closeDrawer()})),document.body.addEventListener("click",(e=>{e.target.classList.contains("m-drawer__wrapper")&&this.closeDrawer()}))}openDrawer(){window.innerWidth<770&&this.drawerWapper.classList.add("mobile"),this.drawerWapper.classList.remove("m:hidden"),requestAnimationFrame((()=>{this.drawerWapper.style.setProperty("--m-bg-opacity","0.5"),this.drawerContent.style.setProperty("--m-translate-x","0")}))}closeDrawer(){this.drawerWapper.style.setProperty("--m-bg-opacity","0"),this.drawerContent.style.setProperty("--m-translate-x","100%"),setTimeout((()=>{this.drawerWapper.classList.add("m:hidden"),this.drawerWapper.classList.remove("mobile")}),300)}}customElements.define("pickup-availability-drawer",e)}
+if (!customElements.get('pickup-availability')) {
+  customElements.define(
+    'pickup-availability',
+    class PickupAvailability extends HTMLElement {
+      constructor() {
+        super();
+
+        if (!this.hasAttribute('available')) return;
+
+        this.errorHtml = this.querySelector('template').content.firstElementChild.cloneNode(true);
+        this.onClickRefreshList = this.onClickRefreshList.bind(this);
+        this.fetchAvailability(this.dataset.variantId);
+      }
+
+      fetchAvailability(variantId) {
+        let rootUrl = this.dataset.rootUrl;
+        if (!rootUrl.endsWith('/')) {
+          rootUrl = rootUrl + '/';
+        }
+        const variantSectionUrl = `${rootUrl}variants/${variantId}/?section_id=pickup-availability`;
+
+        fetch(variantSectionUrl)
+          .then((response) => response.text())
+          .then((text) => {
+            const sectionInnerHTML = new DOMParser()
+              .parseFromString(text, 'text/html')
+              .querySelector('.shopify-section');
+            this.renderPreview(sectionInnerHTML);
+          })
+          .catch((e) => {
+            const button = this.querySelector('button');
+            if (button) button.removeEventListener('click', this.onClickRefreshList);
+            this.renderError();
+          });
+      }
+
+      onClickRefreshList(evt) {
+        this.fetchAvailability(this.dataset.variantId);
+      }
+
+      renderError() {
+        this.innerHTML = '';
+        this.appendChild(this.errorHtml);
+
+        this.querySelector('button').addEventListener('click', this.onClickRefreshList);
+      }
+
+      renderPreview(sectionInnerHTML) {
+        const drawer = document.querySelector('pickup-availability-drawer');
+        if (drawer) drawer.remove();
+        if (!sectionInnerHTML.querySelector('pickup-availability-preview')) {
+          this.innerHTML = '';
+          this.removeAttribute('available');
+          return;
+        }
+
+        this.innerHTML = sectionInnerHTML.querySelector('pickup-availability-preview').outerHTML;
+        this.setAttribute('available', '');
+
+        document.body.appendChild(sectionInnerHTML.querySelector('pickup-availability-drawer'));
+
+        const button = this.querySelector('button');
+        if (button)
+          button.addEventListener('click', (evt) => {
+            document.querySelector('pickup-availability-drawer').show(evt.target);
+          });
+      }
+    }
+  );
+}
+
+if (!customElements.get('pickup-availability-drawer')) {
+  customElements.define(
+    'pickup-availability-drawer',
+    class PickupAvailabilityDrawer extends HTMLElement {
+      constructor() {
+        super();
+
+        this.onBodyClick = this.handleBodyClick.bind(this);
+
+        this.querySelector('button').addEventListener('click', () => {
+          this.hide();
+        });
+
+        this.addEventListener('keyup', (event) => {
+          if (event.code.toUpperCase() === 'ESCAPE') this.hide();
+        });
+      }
+
+      handleBodyClick(evt) {
+        const target = evt.target;
+        if (
+          target != this &&
+          !target.closest('pickup-availability-drawer') &&
+          target.id != 'ShowPickupAvailabilityDrawer'
+        ) {
+          this.hide();
+        }
+      }
+
+      hide() {
+        this.removeAttribute('open');
+        document.body.removeEventListener('click', this.onBodyClick);
+        document.body.classList.remove('overflow-hidden');
+        removeTrapFocus(this.focusElement);
+      }
+
+      show(focusElement) {
+        this.focusElement = focusElement;
+        this.setAttribute('open', '');
+        document.body.addEventListener('click', this.onBodyClick);
+        document.body.classList.add('overflow-hidden');
+        trapFocus(this);
+      }
+    }
+  );
+}

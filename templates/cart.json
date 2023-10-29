@@ -1,18 +1,15 @@
 {
+  "name": "Cart template",
   "sections": {
-    "cart-items": {
-      "type": "main-cart-items",
-      "settings": { "padding_top": 36, "padding_bottom": 36 }
+    "main": {
+      "type": "cart-template"
     },
-    "cart-footer": {
-      "type": "main-cart-footer",
-      "blocks": {
-        "subtotal": { "type": "subtotal", "settings": {} },
-        "buttons": { "type": "buttons", "settings": {} }
-      },
-      "block_order": ["subtotal", "buttons"],
-      "settings": { "padding_top": 20, "padding_bottom": 40 }
+    "recent-viewed-products": {
+      "type": "recent-viewed-products"
     }
   },
-  "order": ["cart-items", "cart-footer"]
+  "order": [
+    "main",
+    "recent-viewed-products"
+  ]
 }
